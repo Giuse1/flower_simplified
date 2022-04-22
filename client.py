@@ -43,10 +43,10 @@ class CifarClient(fl.client.NumPyClient):
 
         self.id = id
         self.batch_size = batch_size
-        if self.id < 2:
-            self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        else:
-            self.device = torch.device("cpu")
+        # if self.id < 2:
+        #     self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        # else:
+        self.device = torch.device("cpu")
         print(self.device)
         self.net = cifarNet().to(self.device)
         self.starting_dict = copy.deepcopy(self.net.state_dict())
@@ -90,7 +90,7 @@ class CifarClient(fl.client.NumPyClient):
                 if "weight" in k and "fc2" not in k:
                     mask = torch.tensor(
                         np.unpackbits(received_state_dict[k], count=torch.numel(self.starting_dict[k])).reshape(
-                            self.starting_dict[k].shape))
+                            self.starting_dict[k].shape)).to(self.device)
                     name, att = k.split('.')
                     prune.custom_from_mask(getattr(self.net, name), name=att, mask=mask)
                     prune.remove(getattr(self.net, name), 'weight')
